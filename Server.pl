@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #----------------------------#
-#  PROGRAM:  tp.pl           #
+#  PROGRAM:  Server.pl       #
 #  BY: Margheriti Romain     #
 #  DATE: 9th, November, 2016 #
 #----------------------------#
@@ -25,7 +25,7 @@ GetOptions(\%args,
 );
 
 if ($args{h} != null || $args{help} != null) {
-  print "Usage : Server.pl [-p] [PORT]\n";
+  print "Usage : Server.pl -p [-h|-help]\n";
 }
 # flush after every write
 $| = 1;
@@ -41,6 +41,8 @@ my $socket = new IO::Socket::INET (
 die "cannot create socket $!\n" unless $socket;
 print "server waiting for client connection on port $port\n";
 
+my $welcome = "hi, use !com to see available commands\n";
+
 while(1)
 {
     # waiting for a new client connection
@@ -51,17 +53,16 @@ while(1)
     my $client_port = $client_socket->peerport();
     print "connection from $client_address:$client_port\n";
 
-    # read up to 1024 characters from the connected client
-    my $data = "";
-    $client_socket->recv($data, 1024);
-    print "received data: $data\n";
+    #send welcome message
+    $client_socket->send($welcome);
 
-    # write response data to the connected client
-    $data = "ok";
-    $client_socket->send($data);
+    while (1) {
+      $data = "";
+      $client_socket->recv($data, 1024);
+      print "receive from $client_address: $data\n";
 
-    # notify client that response has been sent
-    shutdown($client_socket, 1);
+      $client_socket->send("invalid commands. Use !com to see available commands\n")
+    }
 }
 
 $socket->close();
